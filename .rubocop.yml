@@ -1,4 +1,5 @@
 AllCops:
+  TargetRubyVersion: 2.3, 2.4, 2.5, 2.6, 2.7
   Exclude:
     - "README.md"
     - "Guardfile"
@@ -7,7 +8,7 @@ AllCops:
   DisplayCopNames: true
 
 Layout/LineLength:
-  Max: 120
+  Max: 200
 Metrics/MethodLength:
   Max: 20
 Metrics/AbcSize:
@@ -17,10 +18,16 @@ Metrics/ClassLength:
 Metrics/BlockLength:
   ExcludedMethods: ['describe']
   Max: 30
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
 
 
 Style/Documentation:
-  Enabled: false
+  Enabled: true
 Style/ClassAndModuleChildren:
   Enabled: false
 Style/EachForSimpleLoop:
@@ -50,3 +57,5 @@ Lint/RaiseException:
   Enabled: true
 Lint/StructNewOverride:
   Enabled: false
+Style/CaseEquality:
+ Enabled: false
