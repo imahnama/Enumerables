@@ -1,74 +1,123 @@
 module Enumerable
   def my_each
-    each do |i|
-      yield i
-      return to_enum unless block_given?
+    return to_enum unless block_given?
+    index = 0
+    while index < size
+      if is_a? Array
+        yield self[index]
+      elsif is_a? Hash
+        yield keys[index], self[keys[index]]
+      elsif is_a? Range
+        yield to_a[index]
+      end
+      index += 1
     end
   end
 
   def my_each_with_index
-    (0...length).each do |i|
-      yield(self[i], i)
+    return to_enum :my_each unless block_given?
+
+    index = 0
+    while index < size
+      if is_a? Array
+        yield self[index], index
+      elsif is_a? Hash
+        yield keys[index], self[keys[index]]
+      elsif is_a? Range
+        yield to_a[index], index
+      end
+      index += 1
     end
   end
 
   def my_select
-    selection = []
-    my_each { |val| selection.push(val) if yield(val) }
-    selection
-  end
-end
+      return to_enum :my_select unless block_given?
 
-def my_all?(value = nil)
-  result = true
-  if value
-    my_each { |element| result &&= element == value }
-  else
-    my_each { |element| result &&= yield(element) }
-  end
-  result
-end
-
-def my_any?
-  my_each { |val| return true if yield(val) }
-  false
-end
-
-def my_none?
-  my_each { |val| return false if yield(val) }
-  true
-end
-
-def my_count
-  count = 0
-  my_each { |val| count += 1 if yield(val) }
-  count
-end
-
-def my_map(proc = nil)
-  result = []
-  my_each do |element|
-    result <<
-      if proc
-        proc.call(element)
+      if is_a? Array
+        results = []
+        my_each { |x| results << x if yield x }
       else
-        yield(element)
+        results = {}
+        my_each { |y, z| results[y] = z if yield y, z }
       end
+      results
+    end
+
+def my_all?(param = nil)
+  result = true
+    my_each do |value|
+      if block_given?
+        result = false unless yield(value)
+      elsif param.nil?
+        result = false unless value
+      else
+        result = false unless param === value
+      end
+    end
+    result
   end
-  result
-end
 
-def my_inject(initial = self[0])
-  result = initial
-  my_each { |val| result = yield(result, val) }
-  result
-end
+  def my_any?(args = nil)
+     result = false
+     if args.nil? && !block_given?
+       my_each { |x| result = true unless x.nil? || !x }
+     elsif args.nil?
+       my_each { |x| result = true if yield(x) }
+     elsif args.is_a? Regexp
+       my_each { |x| result = true if x.match(args) }
+     elsif args.is_a? Module
+       my_each { |x| result = true if x.is_a?(args) }
+     else
+       my_each { |x| result = true if x == args }
+     end
+     result
+   end
 
-def multiply_els(vals)
-  vals.my_inject(1) { |m, val| m * val }
-end
+   def my_none?(args = nil)
+       result = true
+       if args.nil? && !block_given?
+         my_each { |x| result = false if x == true }
+       elsif args.nil?
+         my_each { |x| result = false if yield(x) }
+       elsif args.is_a? Regexp
+         my_each { |x| result = false if x.match(args) }
+       elsif args.is_a? Module
+         my_each { |x| result = false if x.is_a?(args) }
+       else
+         my_each { |x| result = false if x == args }
+       end
+       result
+     end
 
-# array = [1,2,3,4]
-#
-# array.my_each_with_index {|n,i| puts n + i } == array.each_with_index {|n,i| puts n + i }
-# array.my_each {|n| puts n}
+     def my_count(my_arg = nil)
+    arr = self
+    count = 0
+    if my_arg.nil?
+      arr.my_each { count += 1 }
+    else
+      arr.my_each { |x| count += 1 if x == my_arg }
+    end
+    count
+  end
+
+  def my_map &proc_0
+          map = []
+          if !proc_0.nil?
+              self.my_each { |val| map.push(proc_0.call(val))}
+          elsif block_given?
+              self.my_each { |val| map.push(yield(val))}
+          end
+          map
+      end
+
+ def my_inject initial=self[0]
+          result = initial
+          self.my_each {|val| result = yield(result, val)}
+          result
+      end
+
+  end
+
+  def multiply_els vals
+      vals.my_inject(1) {|m, val| m * val}
+  end
