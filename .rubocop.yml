@@ -27,7 +27,7 @@ Metrics/ModuleLength:
 
 
 Style/Documentation:
-  Enabled: true
+  Enabled: false
 Style/ClassAndModuleChildren:
   Enabled: false
 Style/EachForSimpleLoop:
