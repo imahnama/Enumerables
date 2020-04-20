@@ -1,5 +1,5 @@
-module Enumerable # rubocop:disable Style/Documentation
- def my_each
+module Enumerable
+  def my_each
     return to_enum unless block_given?
 
     index = 0
