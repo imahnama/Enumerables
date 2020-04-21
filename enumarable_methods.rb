@@ -90,18 +90,21 @@ module Enumerable
     result
   end
 
-  def my_count(my_arg = nil)
-    arr = self
-    count = 0
-    if my_arg.nil?
-      arr.my_each { count += 1 }
-    else
-      arr.my_each { |x| count += 1 if x == my_arg }
+  def my_count(args = nil)
+    total = 0
+    if args
+      my_each { |i| total += 1 if i == args }
+    elsif !block_given?
+      total = size
+    elsif !args
+      my_each { |i| total += 1 if yield i }
     end
-    count
+    total
   end
 
   def my_map(&proc_0)
+    return to_enum(:my_map) unless block_given?
+
     map = []
     if !proc_0.nil?
       my_each { |val| map.push(proc_0.call(val)) }
@@ -111,26 +114,21 @@ module Enumerable
     map
   end
 
-  def my_inject(initial = self[0])
-    result = initial
-    my_each { |val| result = yield(result, val) }
-    result
+  def my_inject(*args)
+    array = is_a?(Range) ? to_a : self
+
+    argument = args[0] if args[0].is_a?(Integer)
+    operator = args[0].is_a?(Symbol) ? args[0] : args[1]
+
+    if operator
+      array.my_each { |i| argument = argument ? argument.send(operator, i) : i }
+      return argument
+    end
+    array.my_each { |i| argument = argument ? yield(argument, i) : i }
+    argument
   end
 end
 
 def multiply_els(vals)
   vals.my_inject(1) { |m, val| m * val }
 end
-
-# p (1..4).my_map { |i| i*i }
-# p %w[ant bear cat].my_all? { |word| word.length >= 4 }
-# p [1, 2i, 3.14].my_all?(Numeric)
-# p %w[ant bear cat].my_any? { |word| word.length >= 4 }
-# p [nil, true, 99].my_any?(Integer)
-# p [1,2,3,4].my_count
-# hash = Hash.new
-# %w(cat dog wombat).my_each_with_index { |item, index|
-#   hash[item] = index
-# }
-# hash   #=> {"cat"=>0, "dog"=>1, "wombat"=>2}
-# p [1, 3.14, 42].my_none?(Float)
